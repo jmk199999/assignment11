@@ -11,10 +11,9 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from pydantic import ValidationError
 
+from app.database import Base
 from app.schemas.base import UserCreate
 from app.schemas.user import UserResponse, Token
-
-Base = declarative_base()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
