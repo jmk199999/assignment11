@@ -14,6 +14,7 @@ from pydantic import ValidationError
 from app.database import Base
 from app.schemas.base import UserCreate
 from app.schemas.user import UserResponse, Token
+from app.models.calculation import Calculation
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
