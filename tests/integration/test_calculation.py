@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 from app.models.calculation import Calculation
+from app.models.user import User
 from tests.conftest import create_fake_user, managed_db_session
 
 # Use the logger configured in conftest.py
@@ -48,11 +49,23 @@ def test_calculation_recording(db_session):
     logger.info(f"Initial calculation count before test_calculation_recording: {initial_count}")
     assert initial_count == 0, f"Expected 0 calculations before test, found {initial_count}"
     
+    user_id = dummy_user_id()
+    user = User(
+        id = user_id,
+        first_name="Dummy",
+        last_name="User",
+        email="duser@njit.edu",
+        username = "Dummy_User",
+        password="hashed_password"
+    )
+    db_session.add(user)
+    db_session.commit()
+
     inputs = [1, 2, 3]
     calc = Calculation(
-        user_id=dummy_user_id(),
-        type="Addition",
-        inputs=inputs
+        user_id = user_id,
+        type = "Addition",
+        inputs = inputs
     )
 
     db_session.add(calc)

@@ -11,14 +11,14 @@ class Calculation(Base):
     __tablename__ = 'calculations'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), nullable=False)
-#    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+#    user_id = Column(UUID(as_uuid=True), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
     type = Column(String(50), nullable=False)
     inputs = Column(JSON, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-    #user = relationship("users", back_populates="calculations")
+    user = relationship("User", back_populates="calculations")
 
     __mapper_args__ = {
         "polymorphic_on": type,
