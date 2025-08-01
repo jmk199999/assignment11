@@ -61,26 +61,31 @@ def test_calculation_recording(db_session):
     db_session.add(user)
     db_session.commit()
 
-    inputs = [1, 2, 3]
     calc = Calculation(
         user_id = user_id,
         type = "Addition",
-        inputs = inputs
+        a = 1,
+        b = 2
     )
 
     db_session.add(calc)
     db_session.commit()
 
+    new_count = db_session.query(Calculation).count()
+    logger.info(f"Updated calculation count after test_calculation_recording: {new_count}")
+    assert new_count == 1, f"Expected 1 calculation after test, found {new_count}"
+
+
 def test_factory_invalid_type():
     """
     Test factory returns error if unrecognized operation
     """
-    inputs = [12, 13]
     with pytest.raises(ValueError, match="Unsupported calculation type: power"):
         calc = Calculation.create(
             calculation_type='power', 
             user_id = dummy_user_id(),
-            inputs=inputs
+            a = 12,
+            b = 13
         )
 
 # ADDITION TESTS
@@ -89,43 +94,28 @@ def test_addition():
     """
     Test Addition.get_result
     """
-    inputs = [10, 5, 3.5]
-    addition = Addition(user_id=dummy_user_id(), inputs=inputs)
+    a = 10
+    b = 8.5
+    addition = Addition(user_id=dummy_user_id(), a=a, b=b)
     result = addition.get_result()
-    assert result == sum(inputs), f"Expected {sum(inputs)}, got {result}"
+    assert result == (a+b), f"Expected {(a+b)}, got {result}"
 
 def test_addition_factory():
     """
     Test Addition factory
     """
-    inputs = [12, 10, 9, 18, -30]
+    a = 10
+    b = 8.5
     calc = Calculation.create(
         calculation_type='AdDiTiOn', 
         user_id = dummy_user_id(),
-        inputs=inputs
+        a = a,
+        b = b
     )
 
     assert isinstance(calc, Addition), "Factory did not return an Addition instance"
     result = calc.get_result()
-    assert result == sum(inputs), f"Expected {sum(inputs)}, got {result}"
-
-def test_addition_one_input():
-    """
-    Test Addition with one factor generates error message
-    """
-    inputs = [10]
-    addition = Addition(user_id=dummy_user_id(), inputs=inputs)
-    with pytest.raises(ValueError, match="Inputs must be a list with at least two numbers."):
-        addition.get_result()
-
-def test_addition_invalid_input():
-    """
-    Test Addition with one factor generates error message
-    """
-    inputs = "12 + 13"
-    addition = Addition(user_id=dummy_user_id(), inputs=inputs)
-    with pytest.raises(ValueError, match="Inputs must be a list of numbers."):
-        addition.get_result()
+    assert result == (a+b), f"Expected {(a+b)}, got {result}"
 
 # SUBTRACTION TESTS
 
@@ -133,43 +123,28 @@ def test_subtraction():
     """
     Test Subtraction.get_result
     """
-    inputs = [10, 5, 3.5]
-    subtraction = Subtraction(user_id=dummy_user_id(), inputs=inputs)
+    a = 10
+    b = 8.5
+    subtraction = Subtraction(user_id=dummy_user_id(), a=a, b=b)
     result = subtraction.get_result()
-    assert result == 1.5, f"Expected 1.5, got {result}"
+    assert result == (a-b), f"Expected {(a+b)}, got {result}"
 
 def test_subtraction_factory():
     """
     Test Subtraction factory
     """
-    inputs = [10, 5, 3.5]
+    a = 10
+    b = 8.5
     calc = Calculation.create(
         calculation_type='Subtraction', 
         user_id = dummy_user_id(),
-        inputs=inputs
+        a = a,
+        b = b
     )
 
     assert isinstance(calc, Subtraction), "Factory did not return an Subtraction instance"
     result = calc.get_result()
-    assert result == 1.5, f"Expected 1.5, got {result}"
-
-def test_subtraction_one_input():
-    """
-    Test Subtraction with one factor generates error message
-    """
-    inputs = [10]
-    subtraction = Subtraction(user_id=dummy_user_id(), inputs=inputs)
-    with pytest.raises(ValueError, match="Inputs must be a list with at least two numbers."):
-        subtraction.get_result()
-
-def test_subtraction_invalid_input():
-    """
-    Test Subtraction with one factor generates error message
-    """
-    inputs = "12 - 13"
-    subtraction = Subtraction(user_id=dummy_user_id(), inputs=inputs)
-    with pytest.raises(ValueError, match="Inputs must be a list of numbers."):
-        subtraction.get_result()
+    assert result == (a-b), f"Expected {(a-b)}, got {result}"
 
 # MULTIPLICATION TESTS
 
@@ -177,43 +152,28 @@ def test_multiplication():
     """
     Test Multiplication.get_result
     """
-    inputs = [1, 2, 3]
-    multiplication = Multiplication(user_id=dummy_user_id(), inputs=inputs)
+    a = 10
+    b = 8.5
+    multiplication = Multiplication(user_id=dummy_user_id(), a=a, b=b)
     result = multiplication.get_result()
-    assert result == 6, f"Expected 6, got {result}"
+    assert result == (a*b), f"Expected {(a*b)}, got {result}"
 
 def test_multiplication_factory():
     """
     Test Multiplication factory
     """
-    inputs = [1, 2, 3]
+    a = 10
+    b = 8.5
     calc = Calculation.create(
         calculation_type='Multiplication', 
         user_id = dummy_user_id(),
-        inputs=inputs
+        a = a,
+        b = b
     )
 
     assert isinstance(calc, Multiplication), "Factory did not return an Multiplication instance"
     result = calc.get_result()
-    assert result == 6, f"Expected 6, got {result}"
-
-def test_multiplication_one_input():
-    """
-    Test Multiplication with one factor generates error message
-    """
-    inputs = [10]
-    multiplication = Multiplication(user_id=dummy_user_id(), inputs=inputs)
-    with pytest.raises(ValueError, match="Inputs must be a list with at least two numbers."):
-        multiplication.get_result()
-
-def test_multiplication_invalid_input():
-    """
-    Test Multiplication with one factor generates error message
-    """
-    inputs = "2 * 3"
-    multiplication = Multiplication(user_id=dummy_user_id(), inputs=inputs)
-    with pytest.raises(ValueError, match="Inputs must be a list of numbers."):
-        multiplication.get_result()
+    assert result == (a*b), f"Expected {(a*b)}, got {result}"
 
 # DIVISION TESTS
 
@@ -221,50 +181,36 @@ def test_division():
     """
     Test Division.get_result
     """
-    inputs = [42, 3, 2]
-    division = Division(user_id=dummy_user_id(), inputs=inputs)
+    a = 10
+    b = 8.5
+    division = Division(user_id=dummy_user_id(), a=a, b=b)
     result = division.get_result()
-    assert result == 7, f"Expected 7, got {result}"
+    assert result == (a/b), f"Expected {(a/b)}, got {result}"
 
 def test_division_factory():
     """
     Test Division factory
     """
-    inputs = [42, 3, 2]
+    a = 10
+    b = 8.5
     calc = Calculation.create(
         calculation_type='Division', 
         user_id = dummy_user_id(),
-        inputs=inputs
+        a = a,
+        b = b
     )
 
     assert isinstance(calc, Division), "Factory did not return an Division instance"
     result = calc.get_result()
-    assert result == 7, f"Expected 7, got {result}"
-
-def test_division_one_input():
-    """
-    Test Division with one factor generates error message
-    """
-    inputs = [10]
-    division = Division(user_id=dummy_user_id(), inputs=inputs)
-    with pytest.raises(ValueError, match="Inputs must be a list with at least two numbers."):
-        division.get_result()
-
-def test_division_invalid_input():
-    """
-    Test Division with one factor generates error message
-    """
-    inputs = "12 / 13"
-    division = Division(user_id=dummy_user_id(), inputs=inputs)
-    with pytest.raises(ValueError, match="Inputs must be a list of numbers."):
-        division.get_result()
+    assert result == (a/b), f"Expected {(a/b)}, got {result}"
 
 def test_division_by_zero():
     """
     Test Division by zero
     """
-    inputs = [42, 2, 3, 0]
-    division = Division(user_id=dummy_user_id(), inputs=inputs)
+    a = 10
+    b = 0
+    division = Division(user_id=dummy_user_id(), a=a, b=b)
     with pytest.raises(ValueError, match="Division by zero not permitted."):
         division.get_result()
 

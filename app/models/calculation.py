@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import  relationship
 from sqlalchemy.ext.declarative import declared_attr
 from app.database import Base
+from app.operations import Number
 
 class AbstractCalculation():
     """ Abstract class for Calculation """
@@ -28,27 +29,19 @@ class AbstractCalculation():
         return Column(String(50), nullable=False, index=True)
     
     @declared_attr
-    def inputs(cls): 
-        return Column(JSON, nullable=False)
+    def a(cls): 
+        return Column(Float, nullable=False)
     
     @declared_attr
-    def result(cls):
+    def b(cls):
         return Column(Float, nullable=True)
-
-    @declared_attr
-    def created_at(cls): 
-        return Column(DateTime, default=datetime.utcnow, nullable=False)
-    
-    @declared_attr
-    def updated_at(cls): 
-        return Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     @declared_attr
     def user(cls): 
         return relationship("User", back_populates="calculations")
 
     @classmethod
-    def create(cls, calculation_type: str, user_id: uuid.UUID, inputs: List[float]) -> "Calculation":
+    def create(cls, calculation_type: str, user_id: uuid.UUID, a: Number, b: Number) -> "Calculation":
         """ Factory method for Calculations """
         calculation_classes = {
             'addition': Addition,
@@ -59,14 +52,14 @@ class AbstractCalculation():
         calc_class = calculation_classes.get(calculation_type.lower())
         if not calc_class:
             raise ValueError(f"Unsupported calculation type: {calculation_type}")
-        return calc_class (user_id=user_id, inputs=inputs)
+        return calc_class (user_id=user_id, a=a, b=b)
 
     def get_result(self) -> float: 
         """Method to compute calculation result"""
         raise NotImplementedError # pragma: no cover
 
     def __repr__(self):
-        return f"<Calculation(type={self.type}, inputs={self.inputs})>" # pragma: no cover
+        return f"<Calculation(type={self.type}, a={self.a}, b={self.b})>" # pragma: no cover
 
 
 class Calculation(Base, AbstractCalculation):
@@ -85,52 +78,27 @@ class Addition(Calculation):
     __mapper_args__ = {"polymorphic_identity": "addition"}
 
     def get_result(self) -> float:
-        if not isinstance(self.inputs, list):
-            raise ValueError("Inputs must be a list of numbers.")
-        if len(self.inputs) < 2:
-            raise ValueError("Inputs must be a list with at least two numbers.")
-        return sum(self.inputs)
+        return self.a + self.b
 
 class Subtraction(Calculation):
     """ Subtraction class """
     __mapper_args__ = {"polymorphic_identity": "subtraction"}
 
     def get_result(self) -> float:
-        if not isinstance(self.inputs, list):
-            raise ValueError("Inputs must be a list of numbers.")
-        if len(self.inputs) < 2:
-            raise ValueError("Inputs must be a list with at least two numbers.")
-        result = self.inputs[0] # Set result initially as the first number
-        for value in self.inputs[1:]: # Subtract the other numbers in order
-            result -= value
-        return result
+        return self.a - self.b
 
 class Multiplication(Calculation):
     """ Multiplication class """
     __mapper_args__ = {"polymorphic_identity": "subtraction"}
 
     def get_result(self) -> float:
-        if not isinstance(self.inputs, list):
-            raise ValueError("Inputs must be a list of numbers.")
-        if len(self.inputs) < 2:
-            raise ValueError("Inputs must be a list with at least two numbers.")
-        result = self.inputs[0] # Set result initially as the first number
-        for value in self.inputs[1:]: # Multiply the other numbers in order
-            result *= value
-        return result
+        return self.a * self.b
 
 class Division(Calculation):
     """ Division class """
     __mapper_args__ = {"polymorphic_identity": "division"}
 
     def get_result(self) -> float:
-        if not isinstance(self.inputs, list):
-            raise ValueError("Inputs must be a list of numbers.")
-        if len(self.inputs) < 2:
-            raise ValueError("Inputs must be a list with at least two numbers.")
-        result = self.inputs[0] # Set result initially as the first number
-        for value in self.inputs[1:]: # Divide the other numbers in order
-            if value == 0:
-                raise ValueError("Division by zero not permitted.") 
-            result /= value
-        return result
+        if self.b == 0:
+            raise ValueError("Division by zero not permitted.") 
+        return self.a / self.b
